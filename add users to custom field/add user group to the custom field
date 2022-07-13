@@ -1,0 +1,63 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import groovy.transform.EqualsAndHashCode
+//------------------------------------------------------
+//def issue = ComponentAccessor.issueManager.getIssueObject("IT-148")
+//def user = ComponentAccessor.userManager.getUserByName("jellyrunner")
+ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+//------------------------------------------------------
+def arrayOfComponents = issue.getComponents();
+def issue = event.issue;
+def assignees_cf = 10134L;
+def assignees_users = getCustomFieldValue(issue, assignees_cf)?:[]; //Соисолнители
+def userList = [];
+    userList += assignees_users;
+
+def users_Group1 = getUsersInGroup(getGroup("Группа1")) //[a.malikov(JIRAUSER10345), r.yumakaev(JIRAUSER13689)]
+def users_Group2 = getUsersInGroup(getGroup("Группа2")) //[a.closing(), a.malikov(), a.rashidov(), d.doc(), jiraadmin(), m.zaxidov(), o.gulomkodirov(), o.shodmonov(), r.yumakaev(), y.jamoliddinov()]
+
+for(def comp in arrayOfComponents){
+    if(comp.getName()=="1C"){
+        userList += arrayAddUserIfNotExist(userList,users_Group1)
+    }
+}
+
+if(userList == assignees_users){
+           return [1] + userList
+        } else {
+          updateCustomFieldValue(issue, assignees_cf, userList, currentUser); 
+           return [0] + userList 
+        }
+ 
+//userList+= users_IWO_ServiseDesk_Uztelecom; 
+//return userList    // проверка  значений которые будут записаны
+//return "Done"
+def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+    issue.setCustomFieldValue(customField, newValue)
+    ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    //ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId)?.getValue(issue)
+}
+def arrayAddUserIfNotExist(array,group){
+  def users_Group1 = getUsersInGroup(getGroup("Группа1"))
+  if(array.contains(users_Group1)){
+     return [];
+  }else{
+    return users_Group1;
+  }
+}
+def getGroup(String groupName) {
+    ComponentAccessor.getGroupManager().getGroup(groupName)
+}
+def getUsersInGroup(group) {
+    ComponentAccessor.getGroupManager().getUsersInGroup(group)
+}
+
+
