@@ -1,0 +1,69 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+//------------------------------------------------------
+//def issue = ComponentAccessor.issueManager.getIssueObject("IWO-101")
+//def user = ComponentAccessor.userManager.getUserByName("jellyrunner")
+ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+//------------------------------------------------------
+def assignees_cf = 10134L;
+def assignees_users = getCustomFieldValue(issue, assignees_cf); //Соисолнители
+def arrayOfComponents = issue.getComponents();
+def issue = event.issue;
+
+// сюда по аналогии все группы -------
+
+def users_IWO_ServiseDesk_AND = getUsersInGroup(getGroup("Тест"))
+def users_IWO_ServiseDesk_Uztelecom = getUsersInGroup(getGroup("jira-administrators"))
+// сюда по аналогии все группы -------
+def userList = [];
+userList += assignees_users;
+
+for(def comp in arrayOfComponents){
+    //string errorMsg = "Пользователи уже есть в поле";
+    if(assignees_users != userList){
+         return false;
+}
+    if(comp.getName()=="1C"){
+		userList+=users_IWO_ServiseDesk_AND
+      //print 'test passed !!! '        
+	}  
+}
+ updateCustomFieldValue(issue, assignees_cf, userList,currentUser); 
+//userList+= users_IWO_ServiseDesk_Uztelecom;
+
+	// сюда по аналогии все условия -------
+ 
+// сюда все что не требует условий ----- 
+// сюда все что не требует условий ----- 
+
+//return userList    // проверка  значений которые будут записаны
+
+//return "Done"
+
+    
+// функции
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+}
+def getGroup(String groupName) {
+    ComponentAccessor.getGroupManager().getGroup(groupName)
+}
+def getUsersInGroup(group) {
+    ComponentAccessor.getGroupManager().getUsersInGroup(group)
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue) {
+   def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+   customField.updateValue(null, issue, new ModifiedValue(customField.getValue(issue), newValue), new DefaultIssueChangeHolder());
+   return issue
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+  def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+ issue.setCustomFieldValue(customField, newValue)
+ ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
+
+
