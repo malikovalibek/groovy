@@ -1,0 +1,64 @@
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.CustomFieldManager;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueInputParameters;
+import com.atlassian.jira.bc.issue.IssueService;
+import com.atlassian.jira.bc.project.component.ProjectComponent;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.search.SearchProvider;
+import com.atlassian.jira.issue.search.SearchQuery;
+import com.atlassian.jira.jql.parser.JqlQueryParser;
+import com.atlassian.jira.jql.query.IssueIdCollector;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.ModifiedValue;
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
+import com.atlassian.jira.issue.IssueFactory;
+import com.atlassian.jira.event.type.EventDispatchOption;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.search.SearchProvider;
+import com.atlassian.jira.jql.parser.JqlQueryParser;
+import com.atlassian.jira.web.bean.PagerFilter;
+import com.atlassian.jira.issue.customfields.option.LazyLoadedOption
+import com.atlassian.jira.bc.project.component.ProjectComponentImpl
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.IssueFactory
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.IssueFactory
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import com.atlassian.jira.user.ApplicationUser
+import groovy.transform.Field;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+def log = Logger.getLogger("com.acme.CreateSubtask");
+//return log
+log.setLevel(Level.DEBUG);
+
+//ApplicationUser user = ComponentAccessor.getJiraAuthenticationContext().getUser();
+def user = ComponentAccessor.getJiraAuthenticationContext().getUser();
+//def user = userManager.getUserByName("a.azufarov");
+//return user
+//def issue = ComponentAccessor.issueManager.getIssueObject("DOC-142");
+def issue = event.issue;
+def projectComponentManager = ComponentAccessor.getProjectComponentManager();
+def project = issue.getProjectObject();
+def curAssugnee = issue.getAssignee();
+def groupManager = ComponentAccessor.getGroupManager();
+//string errorMsg = "Assigned user is not in S-Канцелярия (Ассистенты) group";
+def avalibleGroup = "S-Канцелярия (Ассистенты)";
+if (groupManager.isUserInGroup(curAssugnee, avalibleGroup)){
+    issue.assignee = curAssugnee;
+    update(curAssugnee, issue);
+}else{
+return "Assigned user is not in S-Канцелярия (Ассистенты) group"
+    update(curAssugnee, issue);
+}
+
+def update(user, issue) {
+    ComponentAccessor.issueManager.updateIssue(curAssugnee, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
