@@ -1,0 +1,20 @@
+// импорт классов
+import com.opensymphony.workflow.InvalidInputException
+import com.atlassian.jira.component.ComponentAccessor
+// задание переменных
+def group = "[ИС]"
+// получение данных из заявки
+def usr = issue.getAssignee();
+// обработка данных
+if(!usr){
+ throw new InvalidInputException("assignee","исполнитель не выбран." )
+}
+if(!isUserInGroup(usr,group)){
+ throw new InvalidInputException("assignee","выбранные исполнитель не находится в группе: " + group)
+}
+// функции
+def isUserInGroup(user, String groupName) {
+    ComponentAccessor.getGroupManager().with {
+        isUserInGroup(user, getGroup(groupName))
+    }
+}
