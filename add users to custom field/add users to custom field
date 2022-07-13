@@ -1,0 +1,36 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+
+ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+///def issue = ComponentAccessor.issueManager.getIssueObject("IT-116")
+// get group manager and user group
+def groupManager = ComponentAccessor.getGroupManager()
+def groupUsers = groupManager.getUsersInGroup("Тест", false) // false is used to not include inactive users
+def arrayOfComponents = issue.getComponents();
+//return arrayOfComponents;
+def Issue = event.issue
+
+// get custom field for multi-user custom field
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def supportMembersField = ComponentAccessor.customFieldManager.getCustomFieldObject(10134L); //Соисолнители
+def userList = getCustomFieldValue(issue,10134L)?:[]
+for(def comp in arrayOfComponents){
+if(comp.getName()=="ВКС"){
+    userList += (supportMembersField);
+   }
+}
+
+// set custom field value
+issue.setCustomFieldValue(supportMembersField, groupUsers, userList.collect{it})
+
+
+// update issue with changes
+def issueManager = ComponentAccessor.getIssueManager()
+//def currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+issueManager.updateIssue(currentUser, issue, EventDispatchOption.DO_NOT_DISPATCH, false)
+
+def getUserByName(String userName) {
+ComponentAccessor.userManager.getUserByName(userName)
+}
