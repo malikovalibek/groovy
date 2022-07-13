@@ -1,0 +1,39 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import com.atlassian.jira.user.ApplicationUser
+
+ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+def issue = event.issue;
+def cf_user = 10134L;
+def old_users = getCustomFieldValue(issue,cf_user)?:[];
+def new_users = [];
+    
+new_users += old_users
+new_users += arrayAddUserIfNotExist(new_users,"a.malikov");
+
+if(new_users == old_users){
+    return [1] + new_users
+}else{
+    updateCustomFieldValue(issue, cf_user, new_users, user)
+    return [0] + new_users
+}
+
+def updateCustomFieldValue(issue, Long customFieldId, newValue, currentUser) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+    issue.setCustomFieldValue(customField, newValue)
+    ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    //ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId)?.getValue(issue)
+}
+def arrayAddUserIfNotExist(array,userName){
+  def user = ComponentAccessor.userManager.getUserByName(userName)
+  if(array.contains(user)){
+     return [];
+  }else{
+    return user;
+  }
+}
