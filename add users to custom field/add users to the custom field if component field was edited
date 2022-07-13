@@ -1,0 +1,85 @@
+import org.ofbiz.core.entity.GenericValue
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.event.issue.IssueEvent
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.crowd.embedded.api.Group
+
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+//def log = Logger.getLogger("Log:")
+log.setLevel(Level.INFO)
+
+log.info("Will Done")
+
+log.error "component field listener (1)"
+def event = event as IssueEvent;
+def changeHistoryManager = ComponentAccessor.getChangeHistoryManager();
+def issue = event.getIssue() as MutableIssue;
+
+def changelog = event.getChangeLog();
+log.error "component field listener (1.1) changelog: " + changelog
+def changedFields = findFieldsMentionedInChangeLog(changelog)
+log.error "component field listener (1.2) changedFields: " + changedFields
+
+ApplicationUser currentUser = ComponentAccessor.userManager.getUserByName("a.malikov")
+//def event = event
+///def issue = event.issue
+
+//def issue = ComponentAccessor.issueManager.getIssueObject("DOC-271");
+def CoucCF = 10134L;
+def UsersInIssueC = getCustomFieldValue(issue, CoucCF)?:[];
+def arrayOfComponents = issue.getComponents();
+def issueType = issue.issueTypeObject.name
+//log.warn watcherManager.getCurrentWatcherUsernames(issue)
+
+def UsersToAdd = [];
+//log.warn issueWatchers.contains(usersFromGP)
+def usersFromGP_1 = ComponentAccessor.getGroupManager().getUsersInGroup("GroupFOrCHIFS")
+def usersFromGP_2 = ComponentAccessor.getGroupManager().getUsersInGroup("ChiefGP2")
+
+
+if (issueType == "Документ Внутренний" && changedFields.contains("Component")){
+        for (def comp in arrayOfComponents){
+            if (["Генеральный директор"].contains (comp.getName())) {
+                for (def userGP in usersFromGP_1) {
+                    if (!UsersInIssueC.contains(userGP)){
+                      UsersToAdd.addAll(userGP)                        
+                    }                 
+                }
+                UsersInIssueC.addAll(UsersToAdd)
+                updateCustomFieldValue(issue, CoucCF, UsersInIssueC, currentUser);
+            }
+            if (["Гос аппарат"].contains (comp.getName())) {
+                for (def userGP in usersFromGP_2) {
+                    if (!UsersInIssueC.contains(userGP)){
+                      UsersToAdd.addAll(userGP)                        
+                    }                 
+                }
+                UsersInIssueC.addAll(UsersToAdd)
+                updateCustomFieldValue(issue, CoucCF, UsersInIssueC, currentUser);
+            }
+    	}      
+}
+def Set<String> findFieldsMentionedInChangeLog(GenericValue changelog) {
+    Set<String> fields = [];
+    def childEventChanges = changelog.getRelated("ChildChangeItem");
+    for (childEventChange in childEventChanges) {
+        fields.add(childEventChange.getString("field"))
+    }
+    fields;
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+    issue.setCustomFieldValue(customField, newValue)
+    ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+}
