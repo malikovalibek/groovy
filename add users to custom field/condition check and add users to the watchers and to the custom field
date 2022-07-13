@@ -1,0 +1,109 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.IssueFactory
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.user.ApplicationUsers;
+import groovy.io.FileType
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.watchers.WatcherManager
+import com.atlassian.jira.issue.IssueImpl
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.security.groups.GroupManager
+import java.util.*
+import com.atlassian.jira.user.DelegatingApplicationUser
+  
+//------------------------------------------------------
+//def user = ComponentAccessor.userManager.getUserByName("d.doc");
+def user = ComponentAccessor.getJiraAuthenticationContext().getUser();
+
+//------------------------------------------------------
+def issue = event.issue;
+def curAssugnee = issue.getAssignee()
+def curSoispolniteli = getCustomFieldValue(issue,10134L)?:[];///Soispolniteli
+
+//def curWatchers = ComponentAccessor.customFieldManager.getCustomFieldObject(10638L); ///Watchers
+def watcherManager = ComponentAccessor.getWatcherManager();
+def watchers = watcherManager.getCurrentWatcherUsernames(issue)
+
+if (curSoispolniteli == null){
+joinedUsers = curSoispolniteli
+}else{
+    def joinedUsers = curSoispolniteli
+joinedUsers.addAll(watchers)
+}
+
+def FirstGP = ["Группа1", "Группа2", "Группа3"];
+def usersForGp1 = ["d.evmuddinova"];
+//return usersForGp1
+
+def SecondGP = ["MasterGP"];
+def usersForGp2 = ["a.arifdjanov"];
+
+def ThirdGP = ["PlowGP1", "PlowGP2", "SlaveGP"];
+def userForGp3 = ["f.islomova"];
+
+def FourthGP = ["ChiefGP", "ChiefGP2", "ChiefGP3"];
+def userForGp4 = ["n.muhamedhodjaeva"];
+//Отд. налоговой и финансовой отчетности (АПП)
+
+def projectId = 10003L;
+def joinedUsers = curSoispolniteli
+joinedUsers.addAll(watchers);
+
+for (int j=0; j<FirstGP.size(); j++){
+    for (int i=0; i<joinedUsers.size(); i++){
+    if ((isUserInGroup(curSoispolniteli.get(i), FirstGP[j])) || (isUserInGroup(curAssugnee, FirstGP[j]))) {
+for (def contUser in usersForGp1){
+			def userA = getUser(usersForGp1);
+			startWatching(userA, issue);
+		}
+}
+}
+}
+
+for (int j=0; j<SecondGP.size(); j++){
+    for (int i=0; i<joinedUsers.size(); i++){
+    if ((isUserInGroup(curSoispolniteli.get(i), SecondGP[j])) || (isUserInGroup(curAssugnee, SecondGP[j]))) {
+for (def contUser in usersForGp2){
+			def userA = getUser(usersForGp2);
+			startWatching(userA, issue);
+		}
+}
+}
+}
+
+for (int j=0; j<ThirdGP.size(); j++){
+    for (int i=0; i<joinedUsers.size(); i++){
+    if ((isUserInGroup(curSoispolniteli.get(i), ThirdGP[j])) || (isUserInGroup(curAssugnee, ThirdGP[j]))) {
+for (def contUser in userForGp3){
+			def userA = getUser(userForGp3);
+			startWatching(userA, issue);
+		}
+}
+}
+}
+for (int j=0; j<FourthGP.size(); j++){
+    for (int i=0; i<joinedUsers.size(); i++){
+    if ((isUserInGroup(curSoispolniteli.get(i), FourthGP[j])) || (isUserInGroup(curAssugnee, FourthGP[j]))) {
+for (def contUser in userForGp4){
+			def userA = getUser(userForGp4);
+			startWatching(userA, issue);
+		}
+}
+}
+}
+
+//------------------------------------------------------
+def getComponent(Long id) {
+ComponentAccessor.projectComponentManager.find(id)
+}
+def isUserInGroup(user, group) {
+ComponentAccessor.getGroupManager().isUserInGroup(user, group)
+}
+def update(user, issue) {
+ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
+def getCustomFieldValue(issue, Long fieldId) {
+issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+}
