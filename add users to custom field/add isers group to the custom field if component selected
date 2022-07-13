@@ -1,0 +1,72 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+//------------------------------------------------------
+//def issue = ComponentAccessor.issueManager.getIssueObject("IT-156")
+//def user = ComponentAccessor.userManager.getUserByName("jellyrunner")
+ApplicationUser currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+//------------------------------------------------------
+def issue = event.issue
+def assgineeCustomField = 10134L;
+def issueUsers = getCustomFieldValue(issue, assgineeCustomField)?:[];
+def arrayOfComponents = issue.getComponents();
+def notContainUsers = [];
+    
+    def usersGroup1 = getUsersInGroup(getGroup("Кадры")).toString()
+    if(!issueUsers.contains(usersGroup1)){
+        
+    }else{
+        issueUsers += usersGroup1;
+        updateCustomFieldValue(issue, assgineeCustomField, issueUsers, currentUser);
+    }
+    
+
+    for (def component in arrayOfComponents) {
+        if(component.getName() == '1C') {
+	        def usersGroup = getUsersInGroup(getGroup("Группа1"))
+            for(def userGroup in usersGroup) {
+                if(!issueUsers.contains(userGroup, notContainUsers)) {
+                   notContainUsers += userGroup
+                }
+            }
+        }
+        if(component.getName() == 'BSS') {
+	        def usersGroup = getUsersInGroup(getGroup("Группа2"))
+            for(def userGroup in usersGroup) {
+                if(!issueUsers.contains(userGroup, notContainUsers)) {
+                   notContainUsers += userGroup
+                }
+            }            
+        }
+    }
+if(issueUsers == notContainUsers){
+   // return "NOT UPDATE"
+}else{
+	updateCustomFieldValue(issue, assgineeCustomField, issueUsers, currentUser);
+    //return "WILL UPDATE"
+}
+///updateCustomFieldValue(issue, assgineeCustomField, issueUsers, currentUser);
+    
+// функции
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+}
+def getGroup(String groupName) {
+    ComponentAccessor.getGroupManager().getGroup(groupName)
+}
+def getUsersInGroup(group) {
+    ComponentAccessor.getGroupManager().getUsersInGroup(group)
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue) {
+   def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+   customField.updateValue(null, issue, new ModifiedValue(customField.getValue(issue), newValue), new DefaultIssueChangeHolder());
+   return issue
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+  def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+ issue.setCustomFieldValue(customField, newValue)
+ ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+}
