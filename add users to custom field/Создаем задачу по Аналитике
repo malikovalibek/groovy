@@ -1,0 +1,69 @@
+//**************************************************Создаем задачу по Аналитике*************************************************************************************
+  //Проверяем, что выставлен чек бокс необходимости создания задачи на аналитику. Формируем значения для заполнения к задаче по Аналитике
+  if(issueCreateList!=null && issueCreateList.contains('Аналитика')) {    
+    issueInputParameters = issueService.newIssueInputParameters()
+    issueInputParameters.setProjectId(current_issue.getProjectId()) 
+    issueInputParameters.setPriorityId(current_issue.getPriority().getId()) 
+    issueInputParameters.setIssueTypeId("10201")//issue_type 
+    issueInputParameters.setComponentIds(lstCmpnt)
+    issueInputParameters.setFixVersionIds(lstFixVer)
+    issueInputParameters.setAffectedVersionIds(lstAffVer)
+    issueInputParameters.setSummary(current_issue.getSummary()+' (Аналитика)')
+    issueInputParameters.setDescription('Задача на проведение аналитики и написание постановки на разработку')
+    issueInputParameters.addCustomFieldValue('customfield_10000', current_issue.key) //ссылка на эпик
+    issueInputParameters.addCustomFieldValue('customfield_10602', current_issue.getDescription()) //описание эпика
+        if (busValue) {
+            Integer busValInt = ((Double)busValue).intValue()//конвертируем в Integer
+          issueInputParameters.addCustomFieldValue('customfield_12300', String.valueOf(busValInt))//поле business value
+        }
+        if (responseValue) {
+             issueInputParameters.addCustomFieldValue('customfield_11400', responseValue.getName())//поле Ответственный
+        }
+        if (teamValueId) {
+             issueInputParameters.addCustomFieldValue('customfield_11901', teamValueId.getOptionId().toString())//поле Команда
+        }
+        if (accessCFValue) {
+            List<String> list = new ArrayList<String>()
+            for(ApplicationUser user : accessCFValue){
+                log.warn(user.getName())
+                list.add(user.getName())
+            }
+            issueInputParameters.addCustomFieldValue('customfield_10400', list.toArray(new String[list.size()]))//поле Доступ
+        }
+        if (accessGroupCFValue) {
+            List<String> list = new ArrayList<String>()
+            for(Group group : accessGroupCFValue){
+                log.warn(group.getName())
+                list.add(group.getName())
+              }
+              issueInputParameters.addCustomFieldValue('customfield_11305', list.toArray(new String[list.size()]))//поле Доступ(группа) 
+        }
+        log.warn(current_userId)
+        issueInputParameters.setReporterId(current_userId)//ставим репортера
+    CreateValidationResult createValidationResult = issueService.validateCreate(current_user, issueInputParameters)
+    //Проверяем заполнение полей
+    if (!createValidationResult.isValid()) {
+      for (String error : createValidationResult.getErrorCollection().getErrors().values()) {
+        log.warn(error);
+      }    
+      return
+    }
+    IssueResult createResult = issueService.create(current_user, createValidationResult)
+    if (!createResult.isValid()) {
+      for (String error : createResult.getErrorCollection().getErrors().values()) {
+        log.warn(error);
+      }    
+      return
+    }
+
+    //обнуляем значения чекбокса
+    MutableIssue issueToUpdate = (MutableIssue) current_issue
+    def issueManager = ComponentAccessor.getIssueManager()
+    def issue = issueManager.getIssueObject(issueToUpdate.getKey())
+    def check = customFieldManager.getCustomFieldObjects(current_issue).find {it.name == "AddIssueInEpic"}
+    if (check.getValue(issue) !=null && check.getValue(issue).toString().contains('Аналитика')) {
+      def changeHolder = new DefaultIssueChangeHolder()
+      check.updateValue(null, issue, new ModifiedValue(issue.getCustomFieldValue(check), null), changeHolder)
+      log.warn("Значение чекбокс валидатора Аналитика обнулено")
+    }
+  }
