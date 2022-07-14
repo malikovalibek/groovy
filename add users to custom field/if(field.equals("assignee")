@@ -1,0 +1,7 @@
+if(field.equals("assignee")){
+    issueInputParameters.setAssigneeId(val);
+}else if("description"){
+    issueInputParameters.setDescription(val);
+}else if("summary"){
+    issueInputParameters.setSummary(val)
+}.............
