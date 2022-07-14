@@ -1,0 +1,22 @@
+import com.atlassian.jira.bc.JiraServiceContextImpl
+import com.atlassian.jira.bc.portal.PortalPageService
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.portal.PortalPage
+import com.atlassian.jira.sharing.SharedEntity
+import com.atlassian.jira.sharing.SharePermissionImpl
+import com.atlassian.jira.sharing.type.ShareType
+
+def portalPageService = ComponentAccessor.getComponent(PortalPageService)
+def currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def context = new JiraServiceContextImpl(currentUser)
+
+def sharePerm = new SharePermissionImpl(null, ShareType.Name.GROUP, "jira-software-users", null)
+def sharePermissions = new SharedEntity.SharePermissions([sharePerm] as Set)
+def originDash = portalPageService.getPortalPage(context, 10608)
+def isFavorite = portalPageService.isFavourite(currentUser, originDash)
+
+def portalPageBuilder = new PortalPage.Builder().portalPage(originDash).permissions(sharePermissions).name("Dashboard From Console Edit user group for view")
+def updatedDash = portalPageBuilder.build()
+
+assert true == portalPageService.validateForUpdate(context, updatedDash)
+portalPageService.updatePortalPage(context, updatedDash, isFavorite)
