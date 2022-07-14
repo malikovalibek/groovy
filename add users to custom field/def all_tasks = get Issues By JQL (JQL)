@@ -1,0 +1,71 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.search.SearchProvider
+import com.atlassian.jira.issue.search.SearchQuery
+import com.atlassian.jira.jql.parser.JqlQueryParser
+import com.atlassian.jira.jql.query.IssueIdCollector
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.search.SearchProvider
+import com.atlassian.jira.jql.parser.JqlQueryParser
+import com.atlassian.jira.web.bean.PagerFilter
+
+import com.atlassian.jira.event.issue.AbstractIssueEventListener;
+import com.atlassian.jira.event.issue.IssueEvent;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.util.ImportUtils;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.issue.index.IssueIndexingService;
+
+def JQL = "project = OTH AND resolution = Unresolved AND Соисполнители in (o.daniyarbekov)";
+def all_tasks = getIssuesByJQL(JQL);
+//return all_tasks
+def user = ComponentAccessor.userManager.getUserByName("o.daniyarbekov");
+
+for (def issue in all_tasks){
+//return issue; // найдем первую, и сразу выйдем
+def fieldId = 10032;//тут получаем значение с поля
+
+def usersInField = getCustomFieldValue (issue, fieldId)?:[];//содаем пиременную в которой будут храниться наши юсеры
+//return usersInField; // здесь посмотрим что нашлось в поле
+usersInField.removeAll{ it == user}//тут говорим что нужно почистить того самого юзера
+//return usersInField; // теперь здесь покажем что обработалось
+updateCustomFieldValue(issue, fieldId, usersInField); //тут обновляем список типо индескации самой таски
+//return usersInField;
+boolean isIndex = ImportUtils.isIndexIssues();
+ImportUtils.setIndexIssues(true);
+IssueIndexingService IssueIndexingService = (IssueIndexingService) ComponentAccessor.getComponent(IssueIndexingService.class);
+IssueIndexingService.reIndex(issue);
+
+ImportUtils.setIndexIssues(isIndex);
+}
+
+def getIssuesByJQL(String jql) {
+def jqlQueryParser = ComponentAccessor.getComponent(JqlQueryParser)
+def searchProvider = ComponentAccessor.getComponent(SearchProvider)
+def issueManager = ComponentAccessor.getIssueManager()
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+
+def query = jqlQueryParser.parseQuery(jql)
+SearchQuery searchQuery = SearchQuery.create(query, user)
+IssueIdCollector collector = new IssueIdCollector()
+searchProvider.search(searchQuery, collector)
+return collector.getIssueIds().collect { getIssue(it as Long) }
+}
+
+def getIssue(Long id) {
+ComponentAccessor.issueManager.getIssueObject(id)
+}
+def getCustomFieldValue(issue, Long fieldId) {
+issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+//ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId)?.getValue(issue)
+}
+def updateCustomFieldValue(issue, Long customFieldId, newValue) {
+def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+customField.updateValue(null, issue, new ModifiedValue(customField.getValue(issue), newValue), new DefaultIssueChangeHolder());
+return issue
+}
+project = CASE AND status in (Сделать, 'В процессе', 'Нет тех. возможности') AND Соисполнители in (k.mirzaev)
