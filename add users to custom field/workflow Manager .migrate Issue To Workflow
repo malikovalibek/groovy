@@ -1,0 +1,3 @@
+WorkflowManager workflowManager = ComponentAccessor.getWorkflowManager();
+       JiraWorkflow workflow = workflowManager.getWorkflow(issue);
+       workflowManager.migrateIssueToWorkflow(missue, workflow, status);
