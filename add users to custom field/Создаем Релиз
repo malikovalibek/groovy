@@ -1,0 +1,68 @@
+//************************************************Создаем Релиз*********************************************************************************************************
+
+  if(issueCreateList!=null && issueCreateList.contains('Релиз')) {      
+    issueInputParameters = issueService.newIssueInputParameters()
+    issueInputParameters.setProjectId(current_issue.getProjectId()) 
+    issueInputParameters.setIssueTypeId("11001")
+    issueInputParameters.setComponentIds(lstCmpnt)
+    issueInputParameters.setFixVersionIds(lstFixVer)
+    issueInputParameters.setAffectedVersionIds(lstAffVer)
+    issueInputParameters.setPriorityId(current_issue.getPriority().getId()) 
+    issueInputParameters.setSummary(current_issue.getSummary()+' (Релиз)')
+    issueInputParameters.setDescription('Задача на создание релиза')
+    issueInputParameters.addCustomFieldValue('customfield_10000', current_issue.getKey())
+    issueInputParameters.addCustomFieldValue('customfield_10602', current_issue.getDescription())
+        if (busValue) {
+            Integer busValInt = ((Double)busValue).intValue()//конвертируем в Integer
+          issueInputParameters.addCustomFieldValue('customfield_12300', String.valueOf(busValInt))//поле business value
+        }
+        if (responseValue) {
+             issueInputParameters.addCustomFieldValue('customfield_11400', responseValue.getName())//поле Ответственный
+        }
+        if (teamValueId) {
+             issueInputParameters.addCustomFieldValue('customfield_11901', teamValueId.getOptionId().toString())//поле Команда
+        }
+        if (accessCFValue) {
+            List<String> list = new ArrayList<String>()
+            for(ApplicationUser user : accessCFValue){
+                log.warn(user.getName())
+                list.add(user.getName())
+            }
+            issueInputParameters.addCustomFieldValue('customfield_10400', list.toArray(new String[list.size()]))//поле Доступ
+        }
+        if (accessGroupCFValue) {
+            List<String> list = new ArrayList<String>()
+            for(Group group : accessGroupCFValue){
+                log.warn(group.getName())
+                list.add(group.getName())
+              }
+              issueInputParameters.addCustomFieldValue('customfield_11305', list.toArray(new String[list.size()]))//поле Доступ(группа) 
+        }
+        log.warn(current_userId)
+    issueInputParameters.setReporterId(current_userId)
+    CreateValidationResult createValidationResult = issueService.validateCreate(current_user, issueInputParameters)
+    if (!createValidationResult.isValid()) {
+      for (String error : createValidationResult.getErrorCollection().getErrors().values()) {
+        log.warn(error);
+      }    
+      return
+    }
+        
+    IssueResult createResult = issueService.create(current_user, createValidationResult)
+    if (!createResult.isValid()) {
+      for (String error : createResult.getErrorCollection().getErrors().values()) {
+        log.warn(error);
+      }    
+      return
+    }
+
+    MutableIssue issueToUpdate = (MutableIssue) current_issue
+    def issueManager = ComponentAccessor.getIssueManager()
+    def issue = issueManager.getIssueObject(issueToUpdate.getKey())
+    def check = customFieldManager.getCustomFieldObjects(current_issue).find {it.name == "AddIssueInEpic"}
+    if(check.getValue(issue) !=null && check.getValue(issue).toString().contains('Релиз')) {
+      def changeHolder = new DefaultIssueChangeHolder()
+      check.updateValue(null, issue, new ModifiedValue(issue.getCustomFieldValue(check), null), changeHolder)
+      log.warn("Значение чекбокс валидатора Релиз обнулено")
+    }            
+  }
