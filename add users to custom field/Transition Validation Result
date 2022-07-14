@@ -1,0 +1,4 @@
+IssueService.TransitionValidationResult validationResult = issueService
+                .validateTransition(loggedInUser, issueId, transitionId, new IssueInputParametersImpl());
+       проверяем что  validationResult.isValid() true и выполняем
+                issueService.transition(loggedInUser, validationResult)
