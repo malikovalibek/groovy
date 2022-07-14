@@ -1,0 +1,12 @@
+def userDirectory = event.user.getDirectoryId()
+log.warn(userDirectory)
+log.warn(event.user)
+
+def user = event.user
+log.warn(user)
+
+if (userDirectory==1) {
+def group = groupManager.getGroup("CustomersExternal")
+log.warn(group)
+groupManager.addUserToGroup(ApplicationUsers.from(user),group)
+}
