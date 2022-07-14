@@ -1,0 +1,24 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.bc.portal.PortalPageService
+import com.atlassian.jira.issue.search.SearchRequest
+import com.atlassian.jira.bc.filter.SearchRequestService
+import com.atlassian.jira.portal.PortalPage
+import com.atlassian.jira.sharing.SharedEntity.SharePermissions
+import com.atlassian.jira.sharing.SharePermissionImpl
+import com.atlassian.jira.sharing.SharedEntity
+import com.atlassian.jira.sharing.type.ShareType
+import com.atlassian.jira.bc.JiraServiceContextImpl
+
+def searchRequestService = ComponentAccessor.getComponent(SearchRequestService)
+def portalPageService = ComponentAccessor.getComponent(PortalPageService)
+
+def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
+def serviceContext = new JiraServiceContextImpl(user)
+
+def sharePerm = new SharePermissionImpl(null, ShareType.Name.GROUP, "jira-administrators", null)
+def sharePermissions = new SharedEntity.SharePermissions([sharePerm] as Set)
+
+def portalPageBuilder = new PortalPage.Builder().permissions(sharePermissions).name("Онлайн заявка: Тест сохдание с консоли").owner(user)
+
+def portalPage = portalPageBuilder.build()
+portalPageService.createPortalPage(serviceContext, portalPage)
