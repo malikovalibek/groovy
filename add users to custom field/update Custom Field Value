@@ -1,0 +1,42 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+//------------------------------------------------------
+
+ApplicationUser currentUser = ComponentAccessor.userManager.getUserByName("r.bot")
+//------------------------------------------------------
+def issue = event.issue
+def SoispolniteliCustomField = 10032L;
+def issueUsers = getCustomFieldValue(issue, SoispolniteliCustomField)?:[];
+def arrayOfComponents = issue.getComponents();
+
+def notContainUsers = [];
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+    
+def UsersForBUX = ["n.husanova"];//Бухгалтерия
+
+for (def component in arrayOfComponents) {
+  if(component.getName() == 'Бухгалтерия') {
+    def UserS = getUserByName(UsersForBUX)
+  for(def User in UserS) {
+    if(!issueUsers.contains(User)) {
+      notContainUsers += User
+    }
+  }
+  }
+}
+issueUsers += notContainUsers
+  updateCustomFieldValue(issue, SoispolniteliCustomField, issueUsers, currentUser);
+
+// функции
+    def getCustomFieldValue(issue, Long fieldId) {
+issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    }
+    def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+issue.setCustomFieldValue(customField, newValue)
+ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
