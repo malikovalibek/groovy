@@ -1,0 +1,22 @@
+"Ключи проектов исключений" можно переделать под спсиок (что бы юзвери не допускали ошибок в текстовом вводе)
+
+Я как-то делал два варианта списка проектов. Первый, компактный, но иногда неудобно, так как нужно через CTRL выбирать
+Второй, удобнее для выборы, так как просто чекбокс, но много места занимает. Пока не нашел способа как список хотя бы в две колонки пустить
+
+Параметры:
+gadget_createMultiSelectList("Projects", allProjects(), {}, true, "");
+gadget_createCheckboxGroup("Projects1", allProjects(), {}, true, "");
+
+Exec:
+string [] selected_projects = gadget_getMultiValues(argv, "Projects");
+string jql = "project NOT IN (";
+for (int i = 0; i < size(selected_projects); i++){
+    
+    if (i == size(selected_projects) - 1){
+        
+        jql += selected_projects[i] + ", ";
+    } else {
+        
+        jql += selected_projects[i] + ") ";
+    }
+}
