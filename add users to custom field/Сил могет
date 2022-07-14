@@ -1,0 +1,4 @@
+if (!hasInput("attachment")){
+               
+               return false, "attachment", errorMsg1;
+            }
