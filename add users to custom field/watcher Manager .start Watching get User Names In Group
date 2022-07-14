@@ -1,0 +1,13 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.user.util.UserManager
+import com.atlassian.jira.issue.watchers.WatcherManager
+
+def userManager = ComponentAccessor.getUserManager()
+def watcherManager = ComponentAccessor.getWatcherManager()
+def groupName = ComponentAccessor.getGroupManager().getGroup("Tech")
+def techUsers = ComponentAccessor.getGroupManager().getUserNamesInGroup(groupName)
+def users = techUsers*.getUsername()
+
+if(issue.getIssueType().name=="Critical"){
+  watcherManager.startWatching(users, issue)
+}
