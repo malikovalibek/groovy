@@ -1,0 +1,17 @@
+if (bz_agreement){
+    AJS.$.ajax({
+        url: "/rest/projectproperties/1.0/property/update/bulk/"+pkey,
+        type: 'post',
+        dataType: 'json',
+        data: '[{"propertyKey":"bz.product", "propertyValue":'+bz_product_v+'"}, {"propertyKey":"bz.component", "propertyValue":'+bz_component_v+'}, {"propertyKey":"bz_agreement", "propertyValue":'+bz_agreement_v+'}]'
+        async: false,
+        
+    });
+    };
+    AJS.$.ajax({
+        url: "/rest/projectproperties/1.0/property/update/bulk/"+pkey,
+        type: 'post',
+        dataType: 'json',
+        data: '[{"propertyKey":"bz.product", "propertyValue":'+bz_product_v+'"}, {"propertyKey":"bz.component", "propertyValue":'+bz_component_v+'}]'
+        async: false,    
+    });
