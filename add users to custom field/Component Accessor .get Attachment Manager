@@ -1,0 +1,39 @@
+```public static void saveOriginalEmailAsZippedAttachment(Issue issue, ApplicationUser reporter, Message message) {
+    AttachmentManager attachmentManager = ComponentAccessor.getAttachmentManager();
+    CreateAttachmentParamsBean.Builder builder = new CreateAttachmentParamsBean.Builder();
+    try {
+        final String filename = getFileNameForEmail(message);
+        final File eml = File.createTempFile(filename, EML);
+        final File zippedFile = File.createTempFile(filename, ZIP);
+        byte[] buffer = new byte[1024];
+        try (OutputStream out = new FileOutputStream(eml)) {
+            int len;
+            message.getDataHandler().getDataSource();
+            message.writeTo(out);
+            log.debug("Temporary e-mail file written to " + eml.getAbsolutePath());
+            FileOutputStream fileOutputStream = new FileOutputStream(zippedFile);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+            ZipEntry zipEntry = new ZipEntry(filename + EML);
+            zipOutputStream.putNextEntry(zipEntry);
+            FileInputStream in = new FileInputStream(eml);
+            while ((len = in.read(buffer)) > 0) {
+                zipOutputStream.write(buffer, 0, len);
+            }
+            in.close();
+            zipOutputStream.closeEntry();
+            zipOutputStream.close();
+        }
+
+        builder.file(zippedFile).
+                filename(filename + ZIP).
+                contentType("application/zip").
+                author(reporter).
+                issue(issue).
+                copySourceFile(true);
+        CreateAttachmentParamsBean bean = builder.build();
+        attachmentManager.createAttachment(bean);
+        log.debug("attachments added!");
+    } catch (MessagingException | IOException | AttachmentException e) {
+        log.error("Failed to add email attachment to issue", e);
+    }
+}```
