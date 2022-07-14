@@ -1,0 +1,4 @@
+def change = event.changeLog?.getRelated("ChildChangeItem")?.find {it.field.toString() == «component»}
+if (!change) {
+    return
+}
