@@ -1,0 +1,18 @@
+import com.atlassian.jira.component.ComponentAccessor 
+import com.atlassian.jira.issue.search.SearchProvider 
+import com.atlassian.jira.jql.parser.JqlQueryParser 
+import com.atlassian.jira.web.bean.PagerFilter 
+import com.atlassian.jira.issue.label.LabelManager 
+import com.atlassian.jira.bc.issue.search.SearchService 
+
+def jqlQueryParser = ComponentAccessor.getComponent(JqlQueryParser) 
+def searchProvider = ComponentAccessor.getComponent(SearchProvider) 
+def issueManager = ComponentAccessor.getIssueManager() 
+def user = ComponentAccessor.getJiraAuthenticationContext().getUser() 
+def query = jqlQueryParser.parseQuery("reporter = *** AND summary ~ '(*AR*)' and labels != 'AR'")
+
+LabelManager labelManager = ComponentAccessor.getComponent(LabelManager) 
+def searchService = ComponentAccessor.getComponent(SearchService.class) 
+def results = searchService.search(user, query, PagerFilter.getUnlimitedFilter()) 
+results.getResults().each {result -> def issue = issueManager.getIssueObject(result.id) 
+    labelManager.addLabel(user, issue.getId(), "AR", false) }
