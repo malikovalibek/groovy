@@ -1,0 +1,83 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+
+def issue = ComponentAccessor.issueManager.getIssueByCurrentKey("IT-438")
+//def event = event
+//def issue = event.issue
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def newCField = customFieldManager.getCustomFieldObject("customfield_10134")
+///def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def user = ComponentAccessor.userManager.getUserByName("a.malikov")
+//def usersGroup = issue.getCustomFieldValue(newCField)
+def newCFieldVal = issue.getCustomFieldValue(newCField)
+def userObject, component, usersToAdd
+
+
+issue.getComponents().each {
+    if (it.getName() == '1C') {
+        usersToAdd = ['t.khudayarov', 'n.husanova']
+        usersToAdd.each {
+            userObject = ComponentAccessor.userManager.getUserByName(it)
+            if (newCFieldVal == null) {
+                newCFieldVal = []
+                newCFieldVal.add(userObject)
+            } else if (!newCFieldVal.contains(userObject)) {
+                newCFieldVal.add(userObject)
+            }
+        }
+        issue.setCustomFieldValue(newCField, newCFieldVal)
+    ComponentAccessor.getIssueManager().updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
+}
+
+issue.getComponents().each{
+    if (it.getName() == 'BSS') {
+        usersToAdd = ['n.hadirova']
+        usersToAdd.each {
+            userObject = ComponentAccessor.userManager.getUserByName(it)
+            if (newCFieldVal == null) {
+                newCFieldVal = []
+                newCFieldVal.add(userObject)
+            } else if (!newCFieldVal.contains(userObject)) {
+                newCFieldVal.add(userObject)
+            }
+        }
+        issue.setCustomFieldValue(newCField, newCFieldVal)
+    ComponentAccessor.getIssueManager().updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
+}
+
+issue.getComponents().each{
+    if (it.getName() == 'DLT') {
+        usersToAdd = ['a.abidov']
+        usersToAdd.each {
+            userObject = ComponentAccessor.userManager.getUserByName(it)
+            if (newCFieldVal == null) {
+                newCFieldVal = []
+                newCFieldVal.add(userObject)
+            } else if (!newCFieldVal.contains(userObject)) {
+                newCFieldVal.add(userObject)
+            }
+        }
+        issue.setCustomFieldValue(newCField, newCFieldVal)
+    ComponentAccessor.getIssueManager().updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
+}
+issue.getComponents().each{
+    if (it.getName() == 'IPTV') {
+        usersToAdd = ['i.askarova']
+        usersToAdd.each {
+            userObject = ComponentAccessor.userManager.getUserByName(it)
+            if (newCFieldVal == null) {
+                newCFieldVal = []
+                newCFieldVal.add(userObject)
+            } else if (!newCFieldVal.contains(userObject)) {
+                newCFieldVal.add(userObject)
+            }
+        }
+        issue.setCustomFieldValue(newCField, newCFieldVal)
+    ComponentAccessor.getIssueManager().updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }   
+} 
+    
+log.warn(issue.key);
