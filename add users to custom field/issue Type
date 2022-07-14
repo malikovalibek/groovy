@@ -1,0 +1,4 @@
+if (argv["issueType"] == "Ошибка") 
+{
+
+  lfRestrictSelectOptions("components", {"MAPI-billing","MAPI-catalogs", "MAPI-users", "pci","player_stats","pusher","integration"}); }
