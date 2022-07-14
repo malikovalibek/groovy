@@ -1,0 +1,9 @@
+def watcherList = ["kondratyeva_is","filippov_vn","volzhenina_a"] 
+def watchuser
+
+    watcherList.each{
+      watchuser = userManager.getUser(it)
+        watcherManager.startWatching(watchuser,issue)
+    }    
+
+issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
