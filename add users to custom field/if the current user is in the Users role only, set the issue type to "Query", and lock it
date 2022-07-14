@@ -1,0 +1,19 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.security.roles.ProjectRoleManager
+
+import 
+static com.atlassian.jira.issue.IssueFieldConstants.ISSUE_TYPE
+
+// if the current user is in the Users role only, set the issue type to "Query", and lock it
+def projectRoleManager = ComponentAccessor.getComponent(ProjectRoleManager)
+def user = ComponentAccessor.jiraAuthenticationContext.loggedInUser
+
+def remoteUsersRoles = projectRoleManager.getProjectRoles(user, issueContext.projectObject)*.name
+if (remoteUsersRoles == ["Users"]) {
+    def constantsManager = ComponentAccessor.getConstantsManager()
+    def queryIssueType = constantsManager.getAllIssueTypeObjects().find { it.name == "Query" }
+    getFieldById(ISSUE_TYPE).with {
+        setFormValue(queryIssueType.id)
+        setReadOnly(true)
+    }
+}
