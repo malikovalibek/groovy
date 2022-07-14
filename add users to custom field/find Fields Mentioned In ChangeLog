@@ -1,0 +1,27 @@
+if (issueType == "Документооборот" && changedFields.contains("Component")) {
+        for (def comp in arrayOfComponents){
+            if (["Всем ответственным"].contains (comp.getName()) && RezCF.toString() == "Маълумот ва ишда қўллаш учун" && usersFromGP_and_issueWatchers.size() == usersFromGP_and_issueWatchers.unique().size()) {
+                for (def userGP in usersFromGP) {
+                    if (!UsersInIssueO.contains(userGP)){
+                        log.warn !UsersInIssueO.contains(userGP)
+                      UsersToAdd.addAll(userGP)                        
+                    }                 
+                }
+                UsersInIssueO.addAll(UsersToAdd)
+                updateCustomFieldValue(issue, OznakCF, UsersInIssueO, currentUser);
+            }
+    }
+    log.warn "End Step2"
+}
+def Set<String> findFieldsMentionedInChangeLog(GenericValue changelog) {
+    Set<String> fields = [];
+    def childEventChanges = changelog.getRelated("ChildChangeItem");
+    for (childEventChange in childEventChanges) {
+        fields.add(childEventChange.getString("field"))
+    }
+    fields;
+}
+
+def getAllWatchers(issue) {
+    ComponentAccessor.watcherManager.getWatchers(issue, Locale.US)?:[]
+}
