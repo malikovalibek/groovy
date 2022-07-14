@@ -1,0 +1,36 @@
+import com.onresolve.scriptrunner.runner.rest.common.CustomEndpointDelegate
+import groovy.json.JsonBuilder
+import groovy.transform.BaseScript
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.bc.issue.search.SearchService
+import com.atlassian.jira.jql.parser.JqlQueryParser
+import com.atlassian.jira.web.bean.PagerFilter
+import javax.servlet.http.HttpServletRequest
+
+import javax.ws.rs.core.MultivaluedMap
+import javax.ws.rs.core.Response
+
+@BaseScript CustomEndpointDelegate delegate
+
+def jqlQueryParser = ComponentAccessor.getComponent(JqlQueryParser)
+def searchService = ComponentAccessor.getComponent(SearchService)
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def issueManager = ComponentAccessor.getIssueManager()
+def cfm = ComponentAccessor.getCustomFieldManager()
+def sum = 0
+def cf = cfm.getCustomFieldObject(19901L)
+
+doSomething(httpMethod: "GET", groups: []) { MultivaluedMap queryParams, String body, HttpServletRequest request ->
+
+def filterID = request.getParameter("filterID")
+def query = jqlQueryParser.parseQuery("filter=${filterID}")
+def search = searchService.search(user, query, PagerFilter.getUnlimitedFilter())
+
+search.results.each { documentIssue ->
+issueManager.getIssueObject(documentIssue.id).each {
+log.warn(it)
+sum = sum+it.getCustomFieldValue(cf)
+}
+}
+return Response.ok(new JsonBuilder([countDay: sum]).toString()).build();
+}
