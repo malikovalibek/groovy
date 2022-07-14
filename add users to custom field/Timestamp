@@ -1,0 +1,37 @@
+import com.atlassian.jira.event.type.EventDispatchOption
+import java.util.Date
+import java.sql.Timestamp
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.IssueManager
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.config.IssueTypeManager
+import com.atlassian.jira.issue.fields.CustomField
+import groovy.transform.Field
+import com.atlassian.jira.issue.customfields.option.Option
+import com.atlassian.jira.issue.Issue
+import com.atlassian.jira.issue.customfields.option.LazyLoadedOption
+
+def customFieldManager = ComponentAccessor.customFieldManager
+def optionsManager = ComponentAccessor.optionsManager
+def issueManager = ComponentAccessor.getIssueManager()
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+
+def issue = ComponentAccessor.getIssueManager().getIssueObject('CASE-27')
+def CustomFieldValue = getCustomFieldValue(issue, 10609L)?:[];
+IssueManager im = ComponentAccessor.getIssueManager()    
+    
+String priorityName = issue.getPriority().getName();
+if (getCustomFieldValue(issue,10609L).toString() == "ADSL"){
+issue.setDueDate(new Timestamp((new Date() + 7).time))
+    issue.getDueDate()
+} else if (getCustomFieldValue(issue,10609L).toString() == "VDSL"){
+issue.setDueDate(new Timestamp((new Date() + 3).time))
+    issue.getDueDate()
+} else if (getCustomFieldValue(issue,10609L).toString() == "FTTx"){
+issue.setDueDate(new Timestamp((new Date() + 2).time))
+    issue.getDueDate()
+}
+
+def currentUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+
+im.updateIssue(currentUser, issue, EventDispatchOption.DO_NOT_DISPATCH  , false)
