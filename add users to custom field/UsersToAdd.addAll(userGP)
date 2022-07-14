@@ -1,0 +1,62 @@
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.event.issue.IssueEvent;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.MutableIssue;
+import org.ofbiz.core.entity.GenericValue;
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.issue.CustomFieldManager
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.bc.issue.IssueService
+import com.atlassian.jira.security.groups.GroupManager
+import com.atlassian.crowd.embedded.api.Group
+import com.atlassian.jira.bc.issue.IssueService.TransitionValidationResult
+import org.apache.log4j.Logger
+import com.atlassian.jira.util.ImportUtils
+
+log.error "component field listener (1)"
+def event = event as IssueEvent;
+def changeHistoryManager = ComponentAccessor.getChangeHistoryManager();
+def issue = event.getIssue() as MutableIssue;
+
+def changelog = event.getChangeLog();
+log.error "component field listener (1.1) changelog: " + changelog
+def changedFields = findFieldsMentionedInChangeLog(changelog)
+log.error "component field listener (1.2) changedFields: " + changedFields
+
+ApplicationUser currentUser = ComponentAccessor.userManager.getUserByName("a.closing")
+def CoucCF = 10032L; //Поле "Соисполнители"
+def OznakCF = 13302L; //Поле "Ознакомление"
+def RezCF = getCustomFieldValue(issue,13303L).toString()?:[]; //Поле "Резолюция"
+def UsersInIssueC = getCustomFieldValue(issue, CoucCF)?:[];
+def UsersInIssueO = getCustomFieldValue(issue, OznakCF)?:[];
+def arrayOfComponents = issue.getComponents();
+def issueType = issue.issueTypeObject.name
+def UsersToAdd = [];
+def usersFromGP = getUsersInGroup(getGroup("Начальники [ТД]"))
+def issueWatchers = getAllWatchers(issue)
+def usersFromGP_and_issueWatchers = usersFromGP + issueWatchers
+    
+if (issueType == "Документооборот" && changedFields.contains("Component")) {
+        for (def comp in arrayOfComponents){
+            if (["Всем руководителям"].contains (comp.getName()) && RezCF.toString() != "Маълумот ва ишда қўллаш учун") {
+                for (def userGP in usersFromGP) {
+                    if (!UsersInIssueC.contains(userGP)){
+                        log.warn !UsersInIssueC.contains(userGP)
+                      UsersToAdd.addAll(userGP)                        
+                    }                 
+                }
+                UsersInIssueC.addAll(UsersToAdd)
+                updateCustomFieldValue(issue, CoucCF, UsersInIssueC, currentUser);
+            }
+    }
+    log.warn "End Step1"
+}
