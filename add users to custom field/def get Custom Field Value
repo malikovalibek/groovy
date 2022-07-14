@@ -1,0 +1,23 @@
+Groovy Scripts for Jira, [26.04.2022 16:48]
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    }
+    def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+issue.setCustomFieldValue(customField, newValue)
+ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
+
+Groovy Scripts for Jira, [26.04.2022 16:48]
+issue.setCustomFieldValue(newCField, usersGroup)
+    ComponentAccessor.getIssueManager().updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+
+Groovy Scripts for Jira, [26.04.2022 16:48]
+def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    }
+    def updateCustomFieldValue(issue, Long newCField, usersGroup, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+issue.setCustomFieldValue(newCField, usersGroup)
+ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
