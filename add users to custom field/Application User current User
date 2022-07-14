@@ -1,0 +1,84 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+import com.atlassian.jira.issue.CustomFieldManager
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+def log = Logger.getLogger("com.acme.CreateSubtask");
+log.setLevel(Level.DEBUG);
+//------------------------------------------------------
+def issue = ComponentAccessor.issueManager.getIssueObject("IT-440")
+//def user = ComponentAccessor.userManager.getUserByName("jellyrunner")
+ApplicationUser currentUser = ComponentAccessor.userManager.getUserByName("a.malikov")
+//------------------------------------------------------
+//def issue = event.issue
+//def assgineeCustomField = 10134L;
+def SoispolniteliCustomField = 10134L;
+def issueUsers = getCustomFieldValue(issue, SoispolniteliCustomField)?:[];
+def arrayOfComponents = issue.getComponents();
+
+def notContainUsers = [];
+//def ContainUsers = [];
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+ 
+///def UsersFor1C = ["t.khudayarov", "n.husanova"];
+//def caseForUsersFor1C = UsersFor1C += notContainUsers
+def userList = getCustomFieldValue(issue,issueUsers);
+def newUsersFor1CList = ["t.khudayarov", "n.husanova"].collect{getUserByName(it)} + userList?:[]
+log.debug (newUsersFor1CList.toString())
+
+//log.info (caseForUsersFor1C.toString())
+//def insertUsers = getCustomFieldValue(UsersFor1C)?:[];
+//log.info insertUsers.toString();
+
+//def UsersFor1C_users = getCustomFieldValue(issue, UsersFor1C);
+//def UsersFor1CVallue = getCustomFieldValue(UsersFor1C);
+def UsersForBSS = ["a.malikov"];
+def UsersForDLT = ["n.husanova"]
+
+
+for (def component in arrayOfComponents) {
+  if(component.getName() == '1C') {
+    def UserS = getUserByName(newUsersFor1CList)
+  for(def User in UserS) {
+    if(!issueUsers.contains(User)) {
+      notContainUsers += User
+    }
+  }
+  }
+
+  if(component.getName() == 'BSS') {
+    def UserS = getUserByName(UsersForBSS)
+  for(def User in UserS) {
+    if(!issueUsers.contains(User)) {
+      notContainUsers += User
+    }
+  }
+  }
+    
+    if(component.getName() == 'DLT') {
+    def UserS = getUserByName(UsersForDLT)
+  for(def User in UserS) {
+    if(!issueUsers.contains(User)) {
+      notContainUsers += User
+    }
+  }    
+  }
+}
+issueUsers += notContainUsers
+  updateCustomFieldValue(issue, SoispolniteliCustomField, issueUsers, currentUser);
+//log.info UserS.getClass()
+       // log.info (UserS.toString())
+// функции
+    def getCustomFieldValue(issue, Long fieldId) {
+    issue.getCustomFieldValue(ComponentAccessor.customFieldManager.getCustomFieldObject(fieldId))
+    }
+    def updateCustomFieldValue(issue, Long customFieldId, newValue, user) {
+    def customField = ComponentAccessor.customFieldManager.getCustomFieldObject(customFieldId)
+issue.setCustomFieldValue(customField, newValue)
+ComponentAccessor.issueManager.updateIssue(user, issue, EventDispatchOption.ISSUE_UPDATED, false)
+    }
