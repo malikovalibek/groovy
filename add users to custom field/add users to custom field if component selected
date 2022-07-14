@@ -1,0 +1,65 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.fields.CustomField
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.issue.ModifiedValue
+import com.atlassian.jira.issue.util.DefaultIssueChangeHolder
+//------------------------------------------------------
+
+ApplicationUser currentUser = ComponentAccessor.userManager.getUserByName("r.bot")
+//------------------------------------------------------
+def issue = event.issue
+def SoispolniteliCustomField = 10032L;
+def issueUsers = getCustomFieldValue(issue, SoispolniteliCustomField)?:[];
+def arrayOfComponents = issue.getComponents();
+
+def notContainUsers = [];
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+    
+def UsersForBUX = ["t.khudayarov"];//Бухгалтерия
+def UsersForGDIK = ["n.hadirova"];//Группа документооборота и контроля
+def UsersForDIII = ["f.kholikov"];//Департамент И и ИИ
+def UsersForIB = ["i.askarov"];//Информационная безопасность
+def UsersForMRIGZ = ["o.kamalov"];//Моб. работе и ГЗ
+def UsersForIPTV = ["m.makhmudov"];//Отдел администрирования IPTV-OTT контента
+def UsersForOASI = ["yu.uzbekov"];//Отдел администрирования сетевой инфраструктуры
+def UsersForOAIT = ["e.musiyachenko"];//Отдел анализа и тестирования
+def UsersForOVNU = ["m.sultanova"];//Отдел внедрения новых услуг
+def UsersForOI = ["f.kholikov"];//Отдел инновации
+def UsersForOK = ["n.izbasarova"];//Отдел кадров
+def UsersForOMIA = ["o.karabaev"];//Отдел маркетинга и аналитики
+def UsersForOM = ["n.pyagay"];//Отдел мониторинга
+def UsersForIT = ["e.tulebaev"];//Отдел поддержки ИТ инфраструктуры
+def UsersForOPKS = ["m.zaxidov"];//Отдел поддержки корпоративных систем
+def UsersForOPNU = ["j.bkhaydarov"];//Отдел поддержки новых услуг
+def UsersForOPUIS = ["e.abdusamiev"];//Отдел поддержки услуг и сервисов
+def UsersForOprUIS = ["r.mirbabaev"];//Отдел продаж услуг и сервисов
+def UsersForOPiI = ["f.kholikov"];//Отдел развития ИИ
+def UsersForORMP = ["a.krajabov"];//Отдел разработки Моб. приложений
+def UsersForORPO = ["n.makhmedov"];//Отдел разработки ПО
+def UsersForOEKiE = ["d.ruzmatov"];//Отдел эксплуатации К и Э
+def UsersForOESiSO = ["s.saydahmedov"];//Отдел эксплуатации С и СО
+def UsersForOTiTB = ["b.abdukarimov"];//Охрана Труда и ТБ
+def UsersForLM = ["a.tuhtasinov"];//Лидер Молодежи
+def UsersForSiSMK = ["m.rajabova"];//С и СМК
+def UsersForSaCOD = ["o.eshonxodjaev"];//Служба администрирования ЦОД
+def UsersForSBP = ["m.tulyaganova"];//Служба БП
+def UsersForSViUnu = ["yo.gafurov"];//Служба В и У новыми услугами
+def UsersForSMiP = ["n.daniyarova"];//Служба маркетинга и продаж
+def UsersForSRNU = ["i.musiyachenko"];//Служба развития новых услуг
+def UsersForSEI = ["s.ismailov"];//Служба эксплуатации инфраструктуры
+def UsersForSexD = ["a.rajabov"];//Служба ЭХ деятельности
+def UsersForYUR = ["d.kinchuk"];//Юрисконсульт
+
+
+
+
+for (def component in arrayOfComponents) {
+  if(component.getName() == 'Бухгалтерия') {
+    def UserS = getUserByName(UsersForBUX)
+  for(def User in UserS) {
+    if(!issueUsers.contains(User)) {
+      notContainUsers += User
+    }
+  }
+  }
