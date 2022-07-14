@@ -1,0 +1,7 @@
+WorkflowDescriptor descriptor = (WorkflowDescriptor) transientVars.get("descriptor")
+
+def step = transientVars["createdStep"] as Step
+
+StepDescriptor stepDescriptor = descriptor.getStep(step.getStepId())
+
+def status = ComponentAccessor.getConstantsManager().getStatus((String) stepDescriptor.getMetaAttributes().get("jira.status.id"))
