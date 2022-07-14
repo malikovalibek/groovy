@@ -1,0 +1,21 @@
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.IssueFieldConstants
+import com.atlassian.jira.issue.attachment.TemporaryWebAttachment
+import com.atlassian.jira.issue.attachment.TemporaryWebAttachmentManager
+import webwork.action.ActionContext
+import com.opensymphony.workflow.InvalidInputException
+
+def temporaryAttachmentUtil = ComponentAccessor.getComponent(TemporaryWebAttachmentManager)
+def formToken = ActionContext.getRequest()?.getParameter(IssueFieldConstants.FORM_TOKEN)
+
+if (formToken) {
+    def tempWebAttachments = temporaryAttachmentUtil.getTemporaryWebAttachmentsByFormToken(formToken)
+    tempWebAttachments.each { TemporaryWebAttachment it ->
+        log.error("Uploaded attachment name: ${it.filename}")
+    }
+    if (tempWebAttachments) {
+        return true
+    } else {
+        throw new InvalidInputException(IssueFieldConstants.ATTACHMENT, 'Требуется загрузить вложение')
+    }
+}
