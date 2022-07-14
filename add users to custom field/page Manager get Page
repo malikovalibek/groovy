@@ -1,0 +1,11 @@
+import com.onresolve.scriptrunner.runner.ScriptRunnerImpl
+import com.comalatech.workflow.StateService
+import com.onresolve.scriptrunner.runner.customisers.WithPlugin
+import com.atlassian.sal.api.component.ComponentLocator
+import com.atlassian.confluence.pages.PageManager
+
+@WithPlugin("com.comalatech.workflow")
+def pageManager = ComponentLocator.getComponent(PageManager)
+def stateService = ScriptRunnerImpl.getOsgiService(StateService)
+def page = pageManager.getPage(561906322)
+def state =  stateService.getCurrentState(page).getName()
