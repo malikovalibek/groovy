@@ -1,0 +1,7 @@
+def issueLinks = ComponentAccessor.getIssueLinkManager().getInwardLinks(issue.id)
+    issueLinks.each { 
+        log.debug it
+        if (it.getLinkTypeId()  == 10100) {
+      ComponentAccessor.getIssueLinkManager().removeIssueLink(it, user)
+        }
+    }
