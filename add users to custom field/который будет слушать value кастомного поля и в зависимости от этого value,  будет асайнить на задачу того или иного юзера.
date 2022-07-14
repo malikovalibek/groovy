@@ -1,0 +1,49 @@
+Всем привет! Ткните носом в ошибку, плз) 
+Есть задача написать лисенер, 
+который будет слушать value кастомного поля и в зависимости от этого value, 
+будет асайнить на задачу того или иного юзера. 
+Лисенер я написал, он отрабатывает без ошибок, но никого не ассайнит) 
+Скрипт:
+
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.Issue 
+import com.atlassian.jira.issue.CustomFieldManager
+import com.atlassian.jira.issue.IssueManager
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.user.ApplicationUser
+import com.atlassian.jira.event.issue.AbstractIssueEventListener
+import com.atlassian.jira.event.issue.IssueEvent
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.index.IssueIndexingService
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+
+def issue = event.issue as Issue
+IssueManager im = ComponentAccessor.getIssueManager()
+def issueManager = ComponentAccessor.issueManager
+def issueService = ComponentAccessor.getIssueService()
+def customFieldManager = ComponentAccessor.getCustomFieldManager()  
+def cField = customFieldManager.getCustomFieldObjectByName("Platform")
+def cFieldValue = issue.getCustomFieldValue(cField)
+def change = event?.getChangeLog()?.getRelated("ChildChangeItem")?.find {it.field == "Platform"}
+
+if (change) {
+
+    if(cFieldValue == "web") {
+        def userName = "Web-Dev"
+        def userWeb = ComponentAccessor.getUserManager().getUserByName(userName)
+        def validateAssignResult = issueService.validateAssign(userWeb, issue.id, issue.reporterId)
+        issueService.assign(userWeb, validateAssignResult)
+    }
+    
+    if(cFieldValue == "android") {
+        def userName_1 = "Android-Dev"
+        def userAndroid = ComponentAccessor.getUserManager().getUserByName(userName_1)
+        def validateAssignResult1 = issueService.validateAssign(userAndroid, issue.id, issue.reporterId)
+        issueService.assign(userAndroid, validateAssignResult1)
+    }
+}
+Насколько я понимаю, 
+надо апдэйтить задачу после выполнения условия, 
+но issueManager.updateIssue(event.user, event.issue, EventDispatchOption.DO_NOT_DISPATCH, false) 
+ругается "cannot find matching metod" Что я делаю не так?)
